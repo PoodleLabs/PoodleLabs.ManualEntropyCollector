@@ -1,0 +1,47 @@
+﻿{
+  "$schema": "https://raw.githubusercontent.com/DotNetAnalyzers/StyleCopAnalyzers/master/StyleCop.Analyzers/StyleCop.Analyzers/Settings/stylecop.schema.json",
+  "settings": {
+    "documentationRules": {
+      "copyrightText": "Copyright (c) {companyName} 2023. All rights reserved.",
+      "companyName": "Poodle Labs LTD",
+      "documentInternalElements": true,
+      "documentationCulture": "en-GB",
+      "documentExposedElements": true,
+      "documentPrivateElements": true,
+      "documentPrivateFields": true,
+      "documentInterfaces": true,
+      "xmlHeader": true
+    },
+    "indentation": {
+      "indentationSize": 4,
+      "useTabs": false,
+      "tabSize": 4
+    },
+    "layoutRules": {
+      "allowConsecutiveUsings": false,
+      "allowDoWhileOnClosingBrace": true,
+      "newlineAtEndOfFile": "require"
+    },
+    "maintainabilityRules": {
+      "topLevelTypes": [ "class", "delegate", "enum", "interface", "struct" ]
+    },
+    "namingRules": {
+      "includeInferredTupleElementNames": false,
+      "tupleElementNameCasing": "PascalCase",
+      "allowCommonHungarianPrefixes": true,
+      "allowedHungarianPrefixes": [],
+      "allowedNamespaceComponents": []
+    },
+    "orderingRules": {
+      "usingDirectivesPlacement": "insideNamespace",
+      "blankLinesBetweenUsingGroups": "omit",
+      "systemUsingDirectivesFirst": true,
+      "elementOrder": [ "constant", "kind", "accessibility", "static", "readonly" ]
+    },
+    "readabilityRules": {
+      "allowBuiltInTypeAliases": false
+    },
+    "spacingRules": {
+    }
+  }
+}
