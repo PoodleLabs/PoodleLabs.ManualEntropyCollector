@@ -5,6 +5,9 @@
 namespace PoodleLabs.EntropyTools;
 
 using System.Diagnostics.CodeAnalysis;
+using System.Globalization;
+using System.Numerics;
+using System.Text;
 
 /// <summary>
 /// The entrypoint containing class for the program.
@@ -25,15 +28,17 @@ internal static class Program
     /// </summary>
     private static void Main()
     {
-        WriteLinesInColour(ConsoleColor.Yellow, "Welcome to Poodle Labs Entropy Tools!", string.Empty);
         while (true)
         {
+            WriteLinesInColour(ConsoleColor.Yellow, "Welcome to Poodle Labs Entropy Tools!", string.Empty);
             var entropyBits = ReadFromConsole<ushort>(
-            TryParseEntropyBits,
-            ConsoleColor.Cyan,
-            "Please enter the desired number of bits of entropy:");
+                false,
+                TryParseEntropyBits,
+                ConsoleColor.Cyan,
+                "Please enter the desired number of bits of entropy:");
 
             var possibilities = ReadFromConsole<ushort>(
+                false,
                 TryParsePossibilities,
                 ConsoleColor.Cyan,
                 "Please enter the number of possibilities your random generation method provides.",
@@ -89,7 +94,48 @@ internal static class Program
                 continue;
             }
 
-            return;
+            WriteLinesInColour(
+                ConsoleColor.Magenta,
+                $"You will now be prompted for inputs; you will need to enter a number from 0-{possibilities - 1} (inclusive).",
+                "If you are flipping a coin, 0 is heads, 1 is tails. If you're rolling a dice labelled 1-6, 1 is 0, 2 is 1, etc.");
+
+            BigInteger result;
+            if (pow2)
+            {
+                WriteLinesInColour(ConsoleColor.Red, "NOT IMPLEMENTED.");
+                result = new BigInteger(0UL);
+            }
+            else
+            {
+                bool TryParseRound(string text, out ushort value)
+                    => ushort.TryParse(text, out value) && value < possibilities;
+                result = new BigInteger(0UL);
+                for (var i = 0; i < inputs; ++i)
+                {
+                    result = (result * possibilities) +
+                        ReadFromConsole<ushort>(
+                        true,
+                        TryParseRound,
+                        ConsoleColor.Cyan,
+                        $"Enter input {i + 1} of {inputs}:");
+                }
+            }
+
+            var binBuilder = new StringBuilder(entropyBits);
+            var one = new BigInteger(1UL);
+            for (var i = 0; i < entropyBits; ++i)
+            {
+                _ = binBuilder.Append(
+                    ((one << (entropyBits - i - 1)) & result) == 0 ? '0' : '1');
+            }
+
+            WriteLinesInColour(ConsoleColor.Green, "Completed entropy collection:");
+            WriteInColour(ConsoleColor.Green, "BASE-10: ");
+            WriteLinesInColour(ConsoleColor.Cyan, result.ToString(CultureInfo.CurrentCulture));
+            WriteInColour(ConsoleColor.Green, "BASE-16: ");
+            WriteLinesInColour(ConsoleColor.Cyan, result.ToString("X", CultureInfo.CurrentCulture));
+            WriteInColour(ConsoleColor.Green, "BASE-2: ");
+            WriteLinesInColour(ConsoleColor.Cyan, binBuilder.ToString(), string.Empty);
         }
     }
 
@@ -97,11 +143,13 @@ internal static class Program
     /// Prompt a user to input a value of the provided type into the console until a value is successfully parsed.
     /// </summary>
     /// <typeparam name="T">The type to parse.</typeparam>
+    /// <param name="skipConfirm">A value indicating whether confirmations should be skipped.</param>
     /// <param name="parser">The parsing/validation method.</param>
     /// <param name="promptColour">The colour to write the prompt in.</param>
     /// <param name="promptLines">The prompt to write before input.</param>
     /// <returns>The input value.</returns>
     private static T ReadFromConsole<T>(
+        bool skipConfirm,
         TryParse<T> parser,
         ConsoleColor promptColour,
         params string[] promptLines)
@@ -119,7 +167,7 @@ internal static class Program
                 WriteLinesInColour(ConsoleColor.Green, ".");
                 try
                 {
-                    if (!Confirm())
+                    if (!skipConfirm && !Confirm())
                     {
                         continue;
                     }
