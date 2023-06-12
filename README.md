@@ -7,3 +7,7 @@ A simple console app for collecting entropy from various sources, like coins and
 Install the .NET SDK, run build.ps1 on Windows (or Linux/Mac with PowerShell installed) or just manually run `dotnet publish` as the ps1 script does, then run the output.
 
 You'll need some source of entropy. A real-life source is recommended; something like a coin to flip, or a dice to roll. Powers of 2 are by far the best, especially when applying a Von Neumann filter. It's more work, but you'll get much better entropy.
+
+## The Von Neumann Filter
+
+This filter applies Von Neumann entropy skew correction to erase any bias independent inputs have. This means if you have a loded dice, as long as each roll is independent, you'll still wind up with true, unbiased entropy. If your dice/coin/whatever is (roughly) unbiased, you can expect to double the number of inputs you'll need for a given amount of entropy. The more biased it is, the more inputs you'll need. Using this filter with CSPRNGs is highly inadvisable, but if you have a coin, a D4, D8, or a rarer D16, you can get unbiased, secure random number generation using this tool even if you don't trust your coin/dice.
