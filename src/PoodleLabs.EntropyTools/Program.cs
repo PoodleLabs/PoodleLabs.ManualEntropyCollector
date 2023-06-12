@@ -37,7 +37,7 @@ internal static class Program
                 TryParsePossibilities,
                 ConsoleColor.Cyan,
                 "Please enter the number of possibilities your random generation method provides.",
-                $"For example 2 for a coinflip, 6 for a six-sided dice (max {byte.MaxValue + 1}):");
+                $"For example 2 for a coinflip, 6 for a six-sided dice (max {byte.MaxValue + 1}), 256 for a random number generator which outputs individual bytes:");
 
             bool pow2;
             int inputs;
@@ -50,7 +50,8 @@ internal static class Program
                 WriteLinesInColour(
                     ConsoleColor.Yellow,
                     "Your random generation method has a possibility number which is a power of 2!",
-                    "Would you like to apply a Von Neumann filter? You will need twice the inputs, but will erase any bias!");
+                    "Would you like to apply a Von Neumann filter? You will need roughly twice the inputs, but will erase any bias from your entropy source if each round is truly independent.",
+                    "This is a good idea for coinflips, dice rolls, and similar methods of entropy generation, but is a bad idea for most computer-generated entropy sources.");
                 vonNeumann = Confirm();
                 Console.WriteLine();
             }
@@ -69,22 +70,18 @@ internal static class Program
                     $"The maximum value for the target number of bits of entropy is {targetMax}.",
                     $"The maximum possible value for your input method is {actualMax}.",
                     $"Given {inputs} inputs, you will achieve {Math.Log2(actualMax):0.000} bits of entropy.");
-            }
-            else
-            {
-                WriteLinesInColour(
-                    ConsoleColor.White,
-                    $"It will take {(vonNeumann ? $"approximately {inputs * 2}" : inputs)} inputs to reach your desired level of security.");
-            }
 
-            if (!Confirm())
-            {
-                continue;
+                if (!Confirm())
+                {
+                    continue;
+                }
+
+                Console.WriteLine();
             }
 
             WriteLinesInColour(
                 ConsoleColor.Yellow,
-                $"Generating {entropyBits} bits of entropy with an input size of {possibilities} {(vonNeumann ? "with" : "without")} a Von Neumann filter.",
+                $"Generating {entropyBits} bits of entropy with an input size of {possibilities} {(vonNeumann ? "with" : "without")} a Von Neumann filter with {(vonNeumann ? $"approximately {inputs * 2}" : inputs)} inputs.",
                 string.Empty);
 
             if (!Confirm())
