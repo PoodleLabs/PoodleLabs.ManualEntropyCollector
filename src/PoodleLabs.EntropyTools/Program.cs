@@ -4,6 +4,7 @@
 
 namespace PoodleLabs.EntropyTools;
 
+using System.Collections;
 using System.Diagnostics.CodeAnalysis;
 using System.Globalization;
 using System.Numerics;
@@ -96,19 +97,69 @@ internal static class Program
 
             WriteLinesInColour(
                 ConsoleColor.Magenta,
+                string.Empty,
                 $"You will now be prompted for inputs; you will need to enter a number from 0-{possibilities - 1} (inclusive).",
-                "If you are flipping a coin, 0 is heads, 1 is tails. If you're rolling a dice labelled 1-6, 1 is 0, 2 is 1, etc.");
+                "If you are flipping a coin, 0 is heads, 1 is tails. If you're rolling a dice labelled 1-6, 1 is 0, 2 is 1, etc.",
+                string.Empty);
+
+            bool TryParseRound(string text, out ushort value)
+                    => ushort.TryParse(text, out value) && value < possibilities;
 
             BigInteger result;
             if (pow2)
             {
-                WriteLinesInColour(ConsoleColor.Red, "NOT IMPLEMENTED.");
+                var bitsPerRound = (int)Math.Log2(possibilities);
+                var bits = new BitArray(entropyBits);
+                for (var i = 0; i < entropyBits;)
+                {
+                    if (vonNeumann)
+                    {
+                        var input1 = ReadFromConsole<ushort>(
+                            true,
+                            TryParseRound,
+                            ConsoleColor.Cyan,
+                            $"Enter input 1 for bits {i}-{i + bitsPerRound}:");
+
+                        var input2 = ReadFromConsole<ushort>(
+                            true,
+                            TryParseRound,
+                            ConsoleColor.Cyan,
+                            $"Enter input 2 for bits {i}-{i + bitsPerRound}:");
+
+                        for (var j = 0; j < bitsPerRound; ++j)
+                        {
+                            var b1 = (input1 & (1 << j)) >> j;
+                            var b2 = (input2 & (1 << j)) >> j;
+                            if (b1 != b2)
+                            {
+                                bits[i++] = b1 != 0;
+                            }
+                        }
+                    }
+                    else
+                    {
+                        var input = ReadFromConsole<ushort>(
+                            true,
+                            TryParseRound,
+                            ConsoleColor.Cyan,
+                            $"Enter input for bits {i}-{i + bitsPerRound}:");
+                        for (var j = 0; j < bitsPerRound; ++j)
+                        {
+                            bits[i + j] = ((1 << j) & input) != 0;
+                        }
+
+                        i += bitsPerRound;
+                    }
+                }
+
                 result = new BigInteger(0UL);
+                for (var i = 0; i < bits.Length; ++i)
+                {
+                    result = (result * 2) + (bits[i] ? 1 : 0);
+                }
             }
             else
             {
-                bool TryParseRound(string text, out ushort value)
-                    => ushort.TryParse(text, out value) && value < possibilities;
                 result = new BigInteger(0UL);
                 for (var i = 0; i < inputs; ++i)
                 {
