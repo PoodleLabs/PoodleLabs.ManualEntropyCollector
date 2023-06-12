@@ -39,9 +39,14 @@ internal static class Program
                 "Please enter the number of possibilities your random generation method provides.",
                 $"For example 2 for a coinflip, 6 for a six-sided dice (max {byte.MaxValue + 1}):");
 
+            bool pow2;
+            int inputs;
             bool vonNeumann;
+            var targetMax = Math.Pow(2, entropyBits);
             if ((possibilities & (possibilities - 1)) == 0)
             {
+                pow2 = true;
+                inputs = (int)Math.Ceiling(Math.Log(targetMax, possibilities));
                 WriteLinesInColour(
                     ConsoleColor.Yellow,
                     "Your random generation method has a possibility number which is a power of 2!",
@@ -51,12 +56,34 @@ internal static class Program
             }
             else
             {
-                vonNeumann = false;
+                inputs = (int)Math.Log(targetMax, possibilities);
+                pow2 = vonNeumann = false;
+            }
+
+            var actualMax = Math.Pow(possibilities, inputs);
+            var missed = targetMax - actualMax;
+            if (actualMax < targetMax)
+            {
+                WriteLinesInColour(
+                    ConsoleColor.Yellow,
+                    $"The maximum value for the target number of bits of entropy is {targetMax}, while the maximum possible value for your input method is {actualMax}.",
+                    $"Given {inputs} inputs, you will achieve  {Math.Log2(actualMax):0.000} bits of entropy.");
+            }
+            else
+            {
+                WriteLinesInColour(
+                    ConsoleColor.White,
+                    $"It will take {(vonNeumann ? $"approximately {inputs * 2}" : inputs)} inputs to reach your desired level of security.");
+            }
+
+            if (!Confirm())
+            {
+                continue;
             }
 
             WriteLinesInColour(
                 ConsoleColor.Yellow,
-                $"Generating {entropyBits} bits of entropy with an input size of: {possibilities} {(vonNeumann ? "with" : "without")} a Von Neumann filter.",
+                $"Generating {entropyBits} bits of entropy with an input size of {possibilities} {(vonNeumann ? "with" : "without")} a Von Neumann filter.",
                 string.Empty);
 
             if (!Confirm())
