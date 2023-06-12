@@ -126,7 +126,7 @@ internal static class Program
                             ConsoleColor.Cyan,
                             $"Enter input 2 for bits {i}-{i + bitsPerRound}:");
 
-                        for (var j = 0; j < bitsPerRound; ++j)
+                        for (var j = 0; j < bitsPerRound && i < entropyBits; ++j)
                         {
                             var b1 = (input1 & (1 << j)) >> j;
                             var b2 = (input2 & (1 << j)) >> j;
@@ -143,12 +143,10 @@ internal static class Program
                             TryParseRound,
                             ConsoleColor.Cyan,
                             $"Enter input for bits {i}-{i + bitsPerRound}:");
-                        for (var j = 0; j < bitsPerRound; ++j)
+                        for (var j = 0; j < bitsPerRound && i < entropyBits; ++j)
                         {
-                            bits[i + j] = ((1 << j) & input) != 0;
+                            bits[i++ + j] = ((1 << j) & input) != 0;
                         }
-
-                        i += bitsPerRound;
                     }
                 }
 
