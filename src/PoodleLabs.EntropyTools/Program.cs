@@ -68,7 +68,7 @@ internal static class Program
                     ConsoleColor.Yellow,
                     $"The maximum value for the target number of bits of entropy is {targetMax}.",
                     $"The maximum possible value for your input method is {actualMax}.",
-                    $"Given {inputs} inputs, you will achieve  {Math.Log2(actualMax):0.000} bits of entropy.");
+                    $"Given {inputs} inputs, you will achieve {Math.Log2(actualMax):0.000} bits of entropy.");
             }
             else
             {
