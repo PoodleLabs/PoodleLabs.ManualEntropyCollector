@@ -76,7 +76,6 @@ internal static class Program
                     $"The maximum value for the target number of bits of entropy is {targetMax}.",
                     $"The maximum possible value for your input method is {actualMax}.",
                     $"Given {inputs} inputs, you will achieve {Math.Log2(actualMax):0.000} bits of entropy.");
-
                 if (!Confirm())
                 {
                     continue;
@@ -89,7 +88,6 @@ internal static class Program
                 ConsoleColor.Yellow,
                 $"Generating {entropyBits} bits of entropy with an input size of {possibilities} {(vonNeumann ? "with" : "without")} a Von Neumann filter with {(vonNeumann ? $"approximately {inputs * 2}" : inputs)} inputs.",
                 string.Empty);
-
             if (!Confirm())
             {
                 continue;
@@ -102,76 +100,53 @@ internal static class Program
                 "If you are flipping a coin, 0 is heads, 1 is tails. If you're rolling a dice labelled 1-6, 1 is 0, 2 is 1, etc.",
                 string.Empty);
 
-            bool TryParseRound(string text, out ushort value)
-                    => ushort.TryParse(text, out value) && value < possibilities;
-
-            BigInteger result;
+            bool TryParseRound(string text, out ushort value) => ushort.TryParse(text, out value) && value < possibilities;
+            var result = new BigInteger(0UL);
             if (pow2)
             {
-                result = new BigInteger(0UL);
                 var bitsPerRound = (int)Math.Log2(possibilities);
                 for (var i = 0; i < entropyBits;)
                 {
                     if (vonNeumann)
                     {
-                        var input1 = ReadFromConsole<ushort>(
-                            true,
-                            TryParseRound,
-                            ConsoleColor.Cyan,
-                            $"Enter input 1 for bits {i}-{i + bitsPerRound}:");
-
-                        var input2 = ReadFromConsole<ushort>(
-                            true,
-                            TryParseRound,
-                            ConsoleColor.Cyan,
-                            $"Enter input 2 for bits {i}-{i + bitsPerRound}:");
-
-                        for (var j = 0; j < bitsPerRound && i < entropyBits; ++j)
+                        var input1 = ReadFromConsole<ushort>(true, TryParseRound, ConsoleColor.Cyan, $"Enter input 1 for bits {i + 1}-{i + bitsPerRound}:");
+                        var input2 = ReadFromConsole<ushort>(true, TryParseRound, ConsoleColor.Cyan, $"Enter input 2 for bits {i + 1}-{i + bitsPerRound}:");
+                        for (var j = bitsPerRound - 1; j >= 0 && i < entropyBits; --j)
                         {
-                            var b1 = (input1 & (1 << j)) >> j;
-                            var b2 = (input2 & (1 << j)) >> j;
-                            if (b1 != b2)
+                            var b1 = GetBitAtIndex(input1, j);
+                            if (b1 != GetBitAtIndex(input2, j))
                             {
-                                result = (result * 2) + (b1 == 0 ? 0 : 1);
+                                result = AddTrailingDigit(result, 2, b1);
                                 ++i;
                             }
                         }
                     }
                     else
                     {
-                        var input = ReadFromConsole<ushort>(
-                            true,
-                            TryParseRound,
-                            ConsoleColor.Cyan,
-                            $"Enter input for bits {i}-{i + bitsPerRound}:");
-                        for (var j = 0; j < bitsPerRound && i < entropyBits; ++j)
+                        var input = ReadFromConsole<ushort>(true, TryParseRound, ConsoleColor.Cyan, $"Enter input for bits {i + 1}-{i + bitsPerRound}:");
+                        for (var j = bitsPerRound - 1; j >= 0 && i < entropyBits; --j, ++i)
                         {
-                            result = (result * 2) + (((1 << j) & input) == 0 ? 0 : 1);
-                            ++i;
+                            result = AddTrailingDigit(result, 2, GetBitAtIndex(input, j));
                         }
                     }
                 }
             }
             else
             {
-                result = new BigInteger(0UL);
                 for (var i = 0; i < inputs; ++i)
                 {
-                    result = (result * possibilities) +
-                        ReadFromConsole<ushort>(
-                        true,
-                        TryParseRound,
-                        ConsoleColor.Cyan,
-                        $"Enter input {i + 1} of {inputs}:");
+                    result = AddTrailingDigit(
+                        result,
+                        possibilities,
+                        ReadFromConsole<ushort>(true, TryParseRound, ConsoleColor.Cyan, $"Enter input {i + 1} of {inputs}:"));
                 }
             }
 
-            var binBuilder = new StringBuilder(entropyBits);
             var one = new BigInteger(1UL);
+            var binaryStringBuilder = new StringBuilder(entropyBits);
             for (var i = 0; i < entropyBits; ++i)
             {
-                _ = binBuilder.Append(
-                    ((one << (entropyBits - i - 1)) & result) == 0 ? '0' : '1');
+                _ = binaryStringBuilder.Append(((one << (entropyBits - i - 1)) & result) == 0 ? '0' : '1');
             }
 
             WriteLinesInColour(ConsoleColor.Green, "Completed entropy collection:");
@@ -180,7 +155,7 @@ internal static class Program
             WriteInColour(ConsoleColor.Green, "BASE-16: ");
             WriteLinesInColour(ConsoleColor.Cyan, result.ToString("X", CultureInfo.CurrentCulture));
             WriteInColour(ConsoleColor.Green, "BASE-2: ");
-            WriteLinesInColour(ConsoleColor.Cyan, binBuilder.ToString(), string.Empty);
+            WriteLinesInColour(ConsoleColor.Cyan, binaryStringBuilder.ToString(), string.Empty);
         }
     }
 
@@ -263,6 +238,23 @@ internal static class Program
             }
         }
     }
+
+    /// <summary>
+    /// Get the bit at the specified index in the provided bitfield.
+    /// </summary>
+    /// <param name="field">The bitfield to extract a bit from.</param>
+    /// <param name="index">The index of the bit.</param>
+    /// <returns>1 or 0 depending on the value of the specified bit.</returns>
+    private static int GetBitAtIndex(ushort field, int index) => ((1 << index) & field) is not 0 ? 1 : 0;
+
+    /// <summary>
+    /// Add a trailing digit to the provided big integer for the specified numeric base.
+    /// </summary>
+    /// <param name="left">The current big integer.</param>
+    /// <param name="base">The base for digits.</param>
+    /// <param name="right">The digit to add to the end.</param>
+    /// <returns>A big integer with the specified digit added to the end.</returns>
+    private static BigInteger AddTrailingDigit(BigInteger left, ushort @base, int right) => (left * @base) + right;
 
     /// <summary>
     /// Parse a ushort larger than 0.
