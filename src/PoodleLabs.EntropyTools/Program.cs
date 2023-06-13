@@ -103,11 +103,14 @@ internal static class Program
             bool TryParseRound(string text, out ushort value) => ushort.TryParse(text, out value) && value < possibilities;
             ushort PromptForRound(string prompt) => ReadFromConsole<ushort>(true, TryParseRound, ConsoleColor.Cyan, prompt);
             var result = new BigInteger(0UL);
+            var actualInputs = 0;
+            var discarded = 0;
             if (pow2)
             {
                 var bitsPerRound = (int)Math.Log2(possibilities);
                 for (var i = 0; i < entropyBits;)
                 {
+                    actualInputs++;
                     var bitStart = i + 1;
                     var bitEnd = Math.Min(i + bitsPerRound, entropyBits);
                     var bitsDescriptor = bitStart == bitEnd ? $"bit {bitStart}" : $"bits {bitStart}-{bitEnd}";
@@ -118,7 +121,12 @@ internal static class Program
                         for (var j = bitsPerRound - 1; j >= 0 && i < entropyBits; --j)
                         {
                             var b1 = GetBitAtIndex(input1, j);
-                            if (b1 != GetBitAtIndex(input2, j))
+                            if (b1 == GetBitAtIndex(input2, j))
+                            {
+                                WriteLinesInColour(ConsoleColor.Yellow, $"Discarding bit {j + 1}");
+                                ++discarded;
+                            }
+                            else
                             {
                                 result = AddTrailingDigit(result, 2, b1);
                                 ++i;
@@ -153,13 +161,21 @@ internal static class Program
                 _ = binaryStringBuilder.Append(((one << (entropyBits - i - 1)) & result) == 0 ? '0' : '1');
             }
 
+            var binaryString = binaryStringBuilder.ToString();
             WriteLinesInColour(ConsoleColor.Green, "Completed entropy collection:");
             WriteInColour(ConsoleColor.Green, "BASE-10: ");
             WriteLinesInColour(ConsoleColor.Cyan, result.ToString(CultureInfo.CurrentCulture));
             WriteInColour(ConsoleColor.Green, "BASE-16: ");
             WriteLinesInColour(ConsoleColor.Cyan, result.ToString("X", CultureInfo.CurrentCulture));
             WriteInColour(ConsoleColor.Green, "BASE-2: ");
-            WriteLinesInColour(ConsoleColor.Cyan, binaryStringBuilder.ToString(), string.Empty);
+            WriteLinesInColour(ConsoleColor.Cyan, binaryString, string.Empty);
+
+            if (discarded > 0)
+            {
+                WriteLinesInColour(ConsoleColor.White, $"Discard rate of {(float)discarded / actualInputs}; 0.5 indicates low bias of your input method (with many iterations).");
+            }
+
+            WriteLinesInColour(ConsoleColor.White, $"Ratio of {(float)binaryString.Count(c => c == '1') / binaryString.Length}; at high entropy bit counts, this should converge toward 0.5.", string.Empty);
         }
     }
 
