@@ -108,8 +108,8 @@ internal static class Program
             BigInteger result;
             if (pow2)
             {
+                result = new BigInteger(0UL);
                 var bitsPerRound = (int)Math.Log2(possibilities);
-                var bits = new BitArray(entropyBits);
                 for (var i = 0; i < entropyBits;)
                 {
                     if (vonNeumann)
@@ -132,7 +132,8 @@ internal static class Program
                             var b2 = (input2 & (1 << j)) >> j;
                             if (b1 != b2)
                             {
-                                bits[i++] = b1 != 0;
+                                result = (result * 2) + (b1 == 0 ? 0 : 1);
+                                ++i;
                             }
                         }
                     }
@@ -145,15 +146,10 @@ internal static class Program
                             $"Enter input for bits {i}-{i + bitsPerRound}:");
                         for (var j = 0; j < bitsPerRound && i < entropyBits; ++j)
                         {
-                            bits[i++ + j] = ((1 << j) & input) != 0;
+                            result = (result * 2) + (((1 << j) & input) == 0 ? 0 : 1);
+                            ++i;
                         }
                     }
-                }
-
-                result = new BigInteger(0UL);
-                for (var i = 0; i < bits.Length; ++i)
-                {
-                    result = (result * 2) + (bits[i] ? 1 : 0);
                 }
             }
             else
