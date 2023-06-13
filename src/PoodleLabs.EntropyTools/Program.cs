@@ -101,16 +101,20 @@ internal static class Program
                 string.Empty);
 
             bool TryParseRound(string text, out ushort value) => ushort.TryParse(text, out value) && value < possibilities;
+            ushort PromptForRound(string prompt) => ReadFromConsole<ushort>(true, TryParseRound, ConsoleColor.Cyan, prompt);
             var result = new BigInteger(0UL);
             if (pow2)
             {
                 var bitsPerRound = (int)Math.Log2(possibilities);
                 for (var i = 0; i < entropyBits;)
                 {
+                    var bitStart = i + 1;
+                    var bitEnd = Math.Min(i + bitsPerRound, entropyBits);
+                    var bitsDescriptor = bitStart == bitEnd ? $"bit {bitStart}" : $"bits {bitStart}-{bitEnd}";
                     if (vonNeumann)
                     {
-                        var input1 = ReadFromConsole<ushort>(true, TryParseRound, ConsoleColor.Cyan, $"Enter input 1 for bits {i + 1}-{i + bitsPerRound}:");
-                        var input2 = ReadFromConsole<ushort>(true, TryParseRound, ConsoleColor.Cyan, $"Enter input 2 for bits {i + 1}-{i + bitsPerRound}:");
+                        var input1 = PromptForRound($"Enter input 1 for {bitsDescriptor}:");
+                        var input2 = PromptForRound($"Enter input 2 for {bitsDescriptor}:");
                         for (var j = bitsPerRound - 1; j >= 0 && i < entropyBits; --j)
                         {
                             var b1 = GetBitAtIndex(input1, j);
@@ -123,7 +127,7 @@ internal static class Program
                     }
                     else
                     {
-                        var input = ReadFromConsole<ushort>(true, TryParseRound, ConsoleColor.Cyan, $"Enter input for bits {i + 1}-{i + bitsPerRound}:");
+                        var input = PromptForRound($"Enter input for {bitsDescriptor}:");
                         for (var j = bitsPerRound - 1; j >= 0 && i < entropyBits; --j, ++i)
                         {
                             result = AddTrailingDigit(result, 2, GetBitAtIndex(input, j));
@@ -138,7 +142,7 @@ internal static class Program
                     result = AddTrailingDigit(
                         result,
                         possibilities,
-                        ReadFromConsole<ushort>(true, TryParseRound, ConsoleColor.Cyan, $"Enter input {i + 1} of {inputs}:"));
+                        PromptForRound($"Enter input {i + 1} of {inputs}:"));
                 }
             }
 
