@@ -13,3 +13,7 @@ You'll need some source of entropy. A real-life source is recommended; something
 This filter applies Von Neumann entropy skew correction to erase any bias independent inputs have. This means if you have a loded dice, as long as each roll is independent, you'll still wind up with true, unbiased entropy. If your dice/coin/whatever is (roughly) unbiased, you can expect to double the number of inputs you'll need for a given amount of entropy. The more biased it is, the more inputs you'll need. Using this filter with CSPRNGs is highly inadvisable, but if you have a coin, a D4, D8, or a rarer D16, you can get unbiased, secure random number generation using this tool even if you don't trust your coin/dice.
 
 **Note:** while you can use many coins/dice/etc, roll/flip them all at once, and enter them individually without a Von Neumann filter, you should use a *single* coin or dice when using a Von Neumann filter.
+
+## BIP 39
+
+This tool was designed with BIP39 mnemonic generation in mind; [PoodleLabs.Bip39](https://github.com/PoodleLabs/PoodleLabs.Bip39) is worth a look if this is your intent.
