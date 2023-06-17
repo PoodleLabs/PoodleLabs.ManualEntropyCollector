@@ -14,6 +14,6 @@ This filter applies Von Neumann entropy skew correction to erase any bias indepe
 
 **Note:** while you can use many coins/dice/etc, roll/flip them all at once, and enter them individually without a Von Neumann filter, you should use a *single* coin or dice when using a Von Neumann filter.
 
-## BIP 39
+## Note on Usage
 
-This tool was designed with BIP39 mnemonic generation in mind; [PoodleLabs.Bip39](https://github.com/PoodleLabs/PoodleLabs.Bip39) is worth a look if this is your intent.
+This is a small proof of concept, a version of which be rolled into a larger suite of airgap-oriented security tools which can be run on Windows, MacOS, Linux, and (the recommended usage) as a UEFI application. If you've suggestions for improvements to this tool, or for inclusions in such a suite, add an issue, or, better yet, open a PR.
