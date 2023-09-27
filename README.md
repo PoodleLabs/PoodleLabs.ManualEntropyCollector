@@ -1,5 +1,7 @@
 # PoodleLabs.ManualEntropyCollector
 
+**ARCHIVED; see https://github.com/PoodleLabs/PoodleLabs.BST**
+
 A simple console app for collecting entropy from various sources, like coins and dice, with support for Von Neumann filtering on power-of-2 input methods (eg: coinflip, D4, D8).
 
 ## How to use it.
